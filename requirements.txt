@@ -1,0 +1,18 @@
+# TOS Upload Service Dependencies
+
+# Web Framework
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+
+# File Upload
+python-multipart>=0.0.6
+
+# TOS SDK (Volcano Cloud Object Storage)
+tos>=2.6.0
+
+# Data Validation
+pydantic>=2.5.3
+pydantic-settings>=2.1.0
+
+# Environment Variables
+python-dotenv>=1.0.0

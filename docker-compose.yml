@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  tos-upload-service:
+    build: .
+    container_name: tos-upload-service
+    ports:
+      - "8001:8001"
+    environment:
+      # TOS Configuration
+      - TOS_REGION=${TOS_REGION:-ap-southeast-1}
+      - TOS_ENDPOINT=${TOS_ENDPOINT:-tos-ap-southeast-1.volces.com}
+      - TOS_BUCKET_NAME=${TOS_BUCKET_NAME:-aipohto-lky}
+      - TOS_ACCESS_KEY=${TOS_ACCESS_KEY}
+      - TOS_SECRET_KEY=${TOS_SECRET_KEY}
+      - TOS_PUBLIC_DOMAIN=${TOS_PUBLIC_DOMAIN:-aipohto-lky.tos-ap-southeast-1.volces.com}
+      # Service Configuration
+      - API_KEY=${API_KEY}
+      - MAX_FILE_SIZE_MB=${MAX_FILE_SIZE_MB:-10}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8001/api/v1/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - tos-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  tos-network:
+    driver: bridge
