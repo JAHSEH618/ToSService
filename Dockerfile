@@ -27,12 +27,14 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY app/ ./app/
 
-# Create logs directory
-RUN mkdir -p /app/logs
-
 # Create non-root user for security
 RUN useradd --create-home --shell /bin/bash appuser && \
     chown -R appuser:appuser /app
+
+# Create logs directory with correct ownership
+# Note: When mounting host volume, ensure host dir has matching permissions
+RUN mkdir -p /app/logs && chown appuser:appuser /app/logs
+
 USER appuser
 
 # Expose port
