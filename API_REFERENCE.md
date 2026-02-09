@@ -1,8 +1,8 @@
 # TOS Upload Service API 接口文档
 
 > **版本**: v1.0.0  
-> **基础路径**: `http://localhost:8001`  
-> **在线文档**: <http://localhost:8001/docs> (Swagger UI)
+> **基础路径**: `http://localhost:10086`  
+> **在线文档**: <http://localhost:10086/docs> (Swagger UI)
 
 ---
 
@@ -102,7 +102,7 @@ X-API-Key: <your-api-key>
 **请求示例**
 
 ```bash
-curl -X POST "http://localhost:8001/api/v1/upload/base64" \
+curl -X POST "http://localhost:10086/api/v1/upload/base64" \
   -H "X-API-Key: your-api-key" \
   -H "Content-Type: application/json" \
   -d '{
@@ -191,7 +191,7 @@ X-API-Key: <your-api-key>
 **请求示例**
 
 ```bash
-curl -X POST "http://localhost:8001/api/v1/upload/image" \
+curl -X POST "http://localhost:10086/api/v1/upload/image" \
   -H "X-API-Key: your-api-key" \
   -F "file=@/path/to/photo.jpg" \
   -F "prefix=avatars/" \
@@ -268,7 +268,7 @@ X-API-Key: <your-api-key>
 **请求示例**
 
 ```bash
-curl -X POST "http://localhost:8001/api/v1/upload/batch" \
+curl -X POST "http://localhost:10086/api/v1/upload/batch" \
   -H "X-API-Key: your-api-key" \
   -H "Content-Type: application/json" \
   -d '[
@@ -446,7 +446,7 @@ with open("photo.jpg", "rb") as f:
 
 # 上传
 response = requests.post(
-    "http://localhost:8001/api/v1/upload/base64",
+    "http://localhost:10086/api/v1/upload/base64",
     headers={"X-API-Key": "your-api-key"},
     json={
         "image_base64": image_base64,
@@ -470,7 +470,7 @@ const axios = require('axios');
 
 const imageBase64 = fs.readFileSync('photo.jpg').toString('base64');
 
-axios.post('http://localhost:8001/api/v1/upload/base64', {
+axios.post('http://localhost:10086/api/v1/upload/base64', {
     image_base64: imageBase64,
     format: 'jpeg',
     prefix: 'uploads/'

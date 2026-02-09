@@ -44,7 +44,7 @@ cp .env.example .env
 docker-compose up -d --build
 
 # 4. 验证服务
-curl http://localhost:8001/api/v1/health
+curl http://localhost:10086/api/v1/health
 ```
 
 ---
@@ -104,13 +104,13 @@ docker-compose logs -f
 
 ```bash
 # 健康检查
-curl http://localhost:8001/api/v1/health
+curl http://localhost:10086/api/v1/health
 
 # 预期响应:
 # {"status":"healthy","service":"TOS Upload Service","version":"1.0.0","tos_connection":"ok",...}
 
 # 查看 API 文档
-open http://localhost:8001/docs
+open http://localhost:10086/docs
 ```
 
 #### 步骤 4: 常用运维命令
@@ -171,10 +171,10 @@ cp .env.example .env
 
 ```bash
 # 开发模式 (热重载)
-uvicorn app.main:app --reload --port 8001
+uvicorn app.main:app --reload --port 10086
 
 # 或者生产模式
-uvicorn app.main:app --host 0.0.0.0 --port 8001 --workers 4
+uvicorn app.main:app --host 0.0.0.0 --port 10086 --workers 4
 ```
 
 ---
@@ -212,7 +212,7 @@ spec:
       - name: tos-upload-service
         image: tos-upload-service:latest
         ports:
-        - containerPort: 8001
+        - containerPort: 10086
         envFrom:
         - secretRef:
             name: tos-secrets
@@ -226,13 +226,13 @@ spec:
         livenessProbe:
           httpGet:
             path: /api/v1/health/live
-            port: 8001
+            port: 10086
           initialDelaySeconds: 10
           periodSeconds: 15
         readinessProbe:
           httpGet:
             path: /api/v1/health/ready
-            port: 8001
+            port: 10086
           initialDelaySeconds: 5
           periodSeconds: 10
         resources:

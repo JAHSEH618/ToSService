@@ -19,7 +19,7 @@ class Settings(BaseSettings):
     tos_public_domain: str = "aipohto-lky.tos-ap-southeast-1.volces.com"
     
     # Service Configuration
-    service_port: int = 8001
+    service_port: int = 10086
     api_key: str = ""
     max_file_size_mb: int = 10
     log_level: str = "INFO"

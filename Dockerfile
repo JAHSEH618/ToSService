@@ -27,22 +27,25 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY app/ ./app/
 
+# Create logs directory
+RUN mkdir -p /app/logs
+
 # Create non-root user for security
 RUN useradd --create-home --shell /bin/bash appuser && \
     chown -R appuser:appuser /app
 USER appuser
 
 # Expose port
-EXPOSE 8001
+EXPOSE 10086
 
-# Health check with faster intervals for container orchestration
+# Health check
 HEALTHCHECK --interval=15s --timeout=5s --start-period=10s --retries=3 \
-    CMD curl -f http://localhost:8001/api/v1/health/live || exit 1
+    CMD curl -f http://localhost:10086/api/v1/health/live || exit 1
 
 # Production startup with multiple workers and performance optimizations
 CMD ["uvicorn", "app.main:app", \
     "--host", "0.0.0.0", \
-    "--port", "8001", \
+    "--port", "10086", \
     "--workers", "4", \
     "--loop", "uvloop", \
     "--http", "httptools", \

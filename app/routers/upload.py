@@ -8,6 +8,7 @@ from typing import Optional
 import asyncio
 
 from ..config import get_settings
+from ..logging_config import get_logger
 from ..models import (
     Base64UploadRequest,
     UploadResult,
@@ -19,6 +20,9 @@ from ..dependencies import verify_api_key
 from ..tos_client import get_tos_client
 from ..exceptions import InvalidFileFormatError, FileSizeExceededError
 
+
+# Logger
+logger = get_logger("tos_upload.upload")
 
 router = APIRouter(prefix="/api/v1/upload", tags=["Upload"])
 
