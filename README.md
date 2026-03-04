@@ -10,7 +10,6 @@
 - [快速开始](#-快速开始)
 - [容器化部署 (Docker)](#-容器化部署-docker)
 - [本地开发](#-本地开发)
-- [Kubernetes 部署](#-kubernetes-部署)
 - [API 接口](#-api-接口)
 - [环境变量](#-环境变量)
 - [项目结构](#-项目结构)
@@ -238,94 +237,6 @@ make test
 
 ---
 
-## ☸️ Kubernetes 部署
-
-### 创建 Secret
-
-```bash
-kubectl create secret generic tos-secrets \
-  --from-literal=TOS_ACCESS_KEY=your-ak \
-  --from-literal=TOS_SECRET_KEY=your-sk \
-  --from-literal=API_KEY=your-api-key
-```
-
-### Deployment 示例
-
-```yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: tos-upload-service
-spec:
-  replicas: 3
-  selector:
-    matchLabels:
-      app: tos-upload-service
-  template:
-    metadata:
-      labels:
-        app: tos-upload-service
-    spec:
-      containers:
-      - name: tos-upload-service
-        image: tos-upload-service:latest
-        ports:
-        - containerPort: 10086
-        envFrom:
-        - secretRef:
-            name: tos-secrets
-        env:
-        - name: TOS_REGION
-          value: "ap-southeast-1"
-        - name: TOS_ENDPOINT
-          value: "tos-ap-southeast-1.volces.com"
-        - name: TOS_BUCKET_NAME
-          value: "your-bucket"
-        livenessProbe:
-          httpGet:
-            path: /api/v1/health/live
-            port: 10086
-          initialDelaySeconds: 10
-          periodSeconds: 15
-        readinessProbe:
-          httpGet:
-            path: /api/v1/health/ready
-            port: 10086
-          initialDelaySeconds: 5
-          periodSeconds: 10
-        resources:
-          requests:
-            memory: "256Mi"
-            cpu: "250m"
-          limits:
-            memory: "512Mi"
-            cpu: "500m"
-```
-
-### Service 示例
-
-```yaml
-apiVersion: v1
-kind: Service
-metadata:
-  name: tos-upload-service
-spec:
-  type: ClusterIP
-  selector:
-    app: tos-upload-service
-  ports:
-  - port: 80
-    targetPort: 10086
-    protocol: TCP
-```
-
-```bash
-kubectl apply -f k8s-deployment.yaml
-kubectl apply -f k8s-service.yaml
-```
-
----
-
 ## 📡 API 接口
 
 详细的 API 文档请参阅 [API_REFERENCE.md](./API_REFERENCE.md)
@@ -336,8 +247,8 @@ kubectl apply -f k8s-service.yaml
 | POST | `/api/v1/upload/image` | Multipart 文件上传 |
 | POST | `/api/v1/upload/batch` | 批量并发上传 |
 | GET | `/api/v1/health` | 完整健康检查 |
-| GET | `/api/v1/health/live` | K8s liveness 探针 |
-| GET | `/api/v1/health/ready` | K8s readiness 探针 |
+| GET | `/api/v1/health/live` | 容器 liveness 探针 |
+| GET | `/api/v1/health/ready` | 容器 readiness 探针 |
 
 ---
 
