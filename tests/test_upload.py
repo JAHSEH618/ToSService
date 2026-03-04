@@ -4,7 +4,7 @@ Tests for upload endpoints.
 
 import base64
 from datetime import datetime, timezone
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch, MagicMock, AsyncMock
 import pytest
 
 from app.models import UploadResult, ImageFormat
@@ -12,16 +12,17 @@ from app.models import UploadResult, ImageFormat
 
 class TestHealthEndpoint:
     """Tests for health check endpoint."""
-    
+
     def test_health_check(self, client):
         """Test health check returns correct response."""
         with patch("app.routers.health.get_tos_client") as mock_tos:
             mock_client = MagicMock()
-            mock_client.check_connection.return_value = True
+            # check_connection_async is an async method — use AsyncMock
+            mock_client.check_connection_async = AsyncMock(return_value=True)
             mock_tos.return_value = mock_client
-            
+
             response = client.get("/api/v1/health")
-            
+
             assert response.status_code == 200
             data = response.json()
             assert data["status"] == "healthy"
@@ -30,7 +31,7 @@ class TestHealthEndpoint:
 
 class TestBase64Upload:
     """Tests for Base64 upload endpoint."""
-    
+
     def test_upload_base64_success(self, client, api_key):
         """Test successful Base64 image upload."""
         # Create a minimal valid JPEG (1x1 pixel)
@@ -40,7 +41,7 @@ class TestBase64Upload:
             b'\x08\n\x0c\x14\r\x0c\x0b\x0b\x0c\x19\x12\x13\x0f\x14\x1d\x1a'
             b'\x1f\x1e\x1d\x1a\x1c\x1c $.\' ",#\x1c\x1c(7),01444\x1f\'9telephones[;4telephones[;'
         ).decode()
-        
+
         mock_result = UploadResult(
             public_url="https://test-bucket.tos-ap-southeast-1.volces.com/generated/test.jpg",
             object_key="generated/test.jpg",
@@ -49,12 +50,12 @@ class TestBase64Upload:
             content_type="image/jpeg",
             upload_time=datetime.now(timezone.utc)
         )
-        
+
         with patch("app.routers.upload.get_tos_client") as mock_tos:
             mock_client = MagicMock()
-            mock_client.upload_base64.return_value = mock_result
+            mock_client.upload_base64_async = AsyncMock(return_value=mock_result)
             mock_tos.return_value = mock_client
-            
+
             response = client.post(
                 "/api/v1/upload/base64",
                 headers={"X-API-Key": api_key},
@@ -64,13 +65,13 @@ class TestBase64Upload:
                     "prefix": "generated/"
                 }
             )
-            
+
             assert response.status_code == 200
             data = response.json()
             assert data["success"] is True
             assert data["code"] == 0
             assert "public_url" in data["data"]
-    
+
     def test_upload_base64_missing_api_key(self, client):
         """Test upload without API key returns 401."""
         response = client.post(
@@ -80,12 +81,12 @@ class TestBase64Upload:
                 "format": "jpeg"
             }
         )
-        
+
         assert response.status_code == 401
         data = response.json()
         assert data["success"] is False
         assert data["code"] == 40101
-    
+
     def test_upload_base64_invalid_api_key(self, client):
         """Test upload with invalid API key returns 401."""
         response = client.post(
@@ -96,7 +97,7 @@ class TestBase64Upload:
                 "format": "jpeg"
             }
         )
-        
+
         assert response.status_code == 401
         data = response.json()
         assert data["success"] is False
@@ -105,7 +106,7 @@ class TestBase64Upload:
 
 class TestImageUpload:
     """Tests for multipart image upload endpoint."""
-    
+
     def test_upload_image_success(self, client, api_key):
         """Test successful image file upload."""
         # Create a minimal valid JPEG
@@ -114,7 +115,7 @@ class TestImageUpload:
             b'\xff\xdb\x00C\x00\x08\x06\x06\x07\x06\x05\x08\x07\x07\x07\t\t'
             b'\x08\n\x0c\x14\r\x0c\x0b\x0b\x0c\x19\x12\x13\x0f\x14\x1d\x1a'
         )
-        
+
         mock_result = UploadResult(
             public_url="https://test-bucket.tos-ap-southeast-1.volces.com/generated/test.jpg",
             object_key="generated/test.jpg",
@@ -123,24 +124,24 @@ class TestImageUpload:
             content_type="image/jpeg",
             upload_time=datetime.now(timezone.utc)
         )
-        
+
         with patch("app.routers.upload.get_tos_client") as mock_tos:
             mock_client = MagicMock()
-            mock_client.upload_bytes.return_value = mock_result
+            mock_client.upload_bytes_async = AsyncMock(return_value=mock_result)
             mock_tos.return_value = mock_client
-            
+
             response = client.post(
                 "/api/v1/upload/image",
                 headers={"X-API-Key": api_key},
                 files={"file": ("test.jpg", test_image_bytes, "image/jpeg")},
                 data={"prefix": "generated/"}
             )
-            
+
             assert response.status_code == 200
             data = response.json()
             assert data["success"] is True
             assert data["code"] == 0
-    
+
     def test_upload_image_invalid_content_type(self, client, api_key):
         """Test upload with invalid content type returns 400."""
         response = client.post(
@@ -148,7 +149,7 @@ class TestImageUpload:
             headers={"X-API-Key": api_key},
             files={"file": ("test.txt", b"not an image", "text/plain")}
         )
-        
+
         assert response.status_code == 400
         data = response.json()
         assert data["success"] is False
